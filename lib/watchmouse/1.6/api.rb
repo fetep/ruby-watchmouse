@@ -18,7 +18,7 @@ module Watchmouse
         @cookie_jar_path = cookie_jar_path
         @cookies = nil
         if @cookie_jar_path && File.exists?(@cookie_jar_path)
-          @cookies = YAML.parse(File.read(@cookie_jar_path))
+          @cookies = YAML.load_file(@cookie_jar_path)
         end
       end # def initialize
 
