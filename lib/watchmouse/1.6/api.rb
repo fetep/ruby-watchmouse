@@ -42,6 +42,36 @@ module Watchmouse
       alias :noop :acct_noop
 
       private
+      def get(endpoint, params = {})
+        params[:callback] = "_"
+        url = URI.join(URL_BASE, endpoint)
+        url.query = params.collect do |k, v|
+          "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}"
+        end.join("&")
+        res = RestClient.get(url.to_s, {:cookies => @cookies})
+
+        begin
+          # JSONP-style "_({json})" -> "{json}" -> data structure
+          data = JSON.parse(res.body[2..-3])
+        rescue JSON::ParserError
+          debug "raw JSON: #{res.body[2..-3]}"
+          raise Watchmouse::Error, "trouble parsing JSON from #{url}: #{$!}"
+        end
+
+        if data["code"] == 1000 or data["code"] == 1008
+          # login issue
+          debug "#{url} returned code=#{data["code"]}, forcing acct_login"
+          acct_login
+          return get(endpoint, params)
+        elsif data["code"] != 0
+          raise Watchmouse::Error, "get to #{url.to_s} " \
+                "failed, code=#{data["code"]} error=#{data["error"]}"
+        end
+
+        return data
+      end # def get
+
+      private
       def post(endpoint, params = {})
         params[:callback] = "_"
         url = URI.join(URL_BASE, endpoint)
