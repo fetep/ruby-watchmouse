@@ -31,13 +31,13 @@ module Watchmouse
       public
       def acct_logout
         post("acct_logout")
-      end
+      end # def acct_logout
       alias :logout :acct_logout
 
       public
       def acct_noop
         post("acct_noop")
-      end
+      end # def acct_noop
       alias :ping :acct_noop
       alias :noop :acct_noop
 
@@ -54,6 +54,7 @@ module Watchmouse
         end
 
         begin
+          # JSONP-style "_({json})" -> "{json}" -> data structure
           data = JSON.parse(res.body[2..-3])
         rescue JSON::ParserError
           debug "raw JSON: #{res.body[2..-3]}"
@@ -85,7 +86,7 @@ module Watchmouse
         end
 
         return data
-      end
+      end # def post
 
       private
       def debug(msg)
