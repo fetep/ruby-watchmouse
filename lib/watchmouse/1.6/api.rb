@@ -78,7 +78,7 @@ module Watchmouse
                 "failed, code=#{data["code"]} error=#{data["error"]}"
         end
 
-        return data
+        return data["result"]
       end # def get
 
       private
@@ -125,7 +125,7 @@ module Watchmouse
           end
         end
 
-        return data
+        return data["result"]
       end # def post
 
       private
