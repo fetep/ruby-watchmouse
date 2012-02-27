@@ -12,6 +12,10 @@ module Watchmouse
     class API
       URL_BASE = "https://api.watchmouse.com/1.6/"
 
+      GET_CALLS = [:acct_logout, :acct_noop, :rule_check, :rule_get,
+                   :rule_log]
+      POST_CALLS = []
+
       public
       def initialize(user, password, cookie_jar_path = nil)
         @user, @password = user, password
@@ -28,33 +32,10 @@ module Watchmouse
       end # def acct_login
       alias :login :acct_login
 
-      public
-      def acct_logout
-        post("acct_logout")
-      end # def acct_logout
-      alias :logout :acct_logout
-
-      public
-      def acct_noop
-        post("acct_noop")
-      end # def acct_noop
-      alias :ping :acct_noop
-      alias :noop :acct_noop
-
-      public
-      def rule_check(name)
-        get("rule_check", {:name => name})
-      end # def rule_check
-
-      public
-      def rule_get(name)
-        get("rule_get", {:name => name})
-      end # def rule_get
-
       private
       def get(endpoint, params = {})
         params[:callback] = "_"
-        url = URI.join(URL_BASE, endpoint)
+        url = URI.join(URL_BASE, endpoint.to_s)
         url.query = params.collect do |k, v|
           "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}"
         end.join("&")
@@ -81,10 +62,21 @@ module Watchmouse
         return data["result"]
       end # def get
 
+      public
+      def method_missing(method, *params)
+        if GET_CALLS.member?(method)
+          get(method, *params)
+        elsif POST_CALLS.member?(method)
+          post(method, *params)
+        else
+          super
+        end
+      end
+
       private
       def post(endpoint, params = {})
         params[:callback] = "_"
-        url = URI.join(URL_BASE, endpoint)
+        url = URI.join(URL_BASE, endpoint.to_s)
         if endpoint == "acct_login"
           # don't pass old cookies when logging in
           res = RestClient.post(URL_BASE + endpoint, params)
