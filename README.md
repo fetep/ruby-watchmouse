@@ -25,6 +25,12 @@ to a "cookie jar":
 
     api = Watchmouse::API.new("latest", "foo@example.org", "MyPassword", "/tmp/cookiejar")
 
+Now that we have an api session, let's inspect all rules with the
+tag "foo":
+
+    res = api.rule_get(:tags => "foo")
+    res["rules"].each { |rule| puts "got rule #{rule['name']}" }
+
 All methods may raise `Watchmouse::Error` if there is a problem with
 the API call.
 
