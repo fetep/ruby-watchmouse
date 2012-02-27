@@ -27,3 +27,8 @@ to a "cookie jar":
 
 All methods may raise `Watchmouse::Error` if there is a problem with
 the API call.
+
+To see all of the available methods and parameters for those methods,
+see the API documentation:
+
+* [1.6 API docs](http://api.watchmouse.com/1.6/)
