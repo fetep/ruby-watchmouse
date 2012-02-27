@@ -41,6 +41,16 @@ module Watchmouse
       alias :ping :acct_noop
       alias :noop :acct_noop
 
+      public
+      def rule_check(name)
+        get("rule_check", {:name => name})
+      end # def rule_check
+
+      public
+      def rule_get(name)
+        get("rule_get", {:name => name})
+      end # def rule_get
+
       private
       def get(endpoint, params = {})
         params[:callback] = "_"
