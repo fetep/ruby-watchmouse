@@ -13,7 +13,7 @@ module Watchmouse
     def self.new(version, *args)
       klass = VERSION_MAP[version]
       if klass.nil?
-        raise "Unknown API version, #{version}"
+        raise Error, "Unknown API version, #{version}"
       end
 
       klass.new(*args)
