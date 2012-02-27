@@ -4,6 +4,7 @@ PATH
     watchmouse (0.0.1)
       json
       rest-client
+      trollop
 
 GEM
   remote: http://rubygems.org/
@@ -12,6 +13,7 @@ GEM
     mime-types (1.17.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    trollop (1.16.2)
 
 PLATFORMS
   ruby

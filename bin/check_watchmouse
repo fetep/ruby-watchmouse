@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "bundler/setup"
+
+require "trollop"
+require "watchmouse/api"
+
+progname = File.basename($0)
+
+opts = Trollop::options do
+  version "#{progname} #{Watchmouse::VERSION}"
+
+  banner <<-EOB
+Usage: #{progname} -e email {-p pass|-f passfile}
+                   {-n name|-t tag}
+                   [-j cookiejar]
+
+EOB
+
+  opt :email, "WatchMouse email",
+      :short => "-e", :required => true, :type => :string
+  opt :pass, "WatchMouse password",
+      :short => "-p", :type => :string
+  opt :passfile, "File containing WatchMouse password",
+      :short => "-f", :type => :string
+  opt :name, "WatchMouse rule name to check",
+      :short => "-n", :type => :string
+  opt :tag, "Check all rules with specified tag",
+      :short => "-t", :type => :string
+
+banner <<-EOB
+          You must specify a WatchMouse rule name or a tag name.
+          To check multiple rules with one call, tags must be used.
+ EOB
+  banner ""
+
+  opt :jar, "Path to cookie jar file",
+       :short => "-j", :type => :string
+
+banner <<-EOB
+          Optionally specify the path to a "cookie jar" to store a
+          session cookie. Without a cookie jar, each invocation of
+          the check will have to complete the login process.
+EOB
+  banner ""
+end
+
+if opts[:pass] and opts[:passfile]
+  Trollop::die "can't specify pass and passfile"
+end
+
+if opts[:pass].nil? and opts[:passfile].nil?
+  Trollop::die "must specify a pass or passfile"
+end
+
+if opts[:passfile]
+  opts[:pass] = File.read(opts[:passfile]).chomp rescue nil
+  if opts[:pass].nil?
+    Trollop::die "could not read passfile #{opts[:passfile]}"
+  end
+end
+
+if opts[:name] and opts[:tag]
+  Trollop::die "can't specify rule name and rule tag"
+end
+
+if opts[:name]
+  params = {:name => opts[:name]}
+  desc = "rule #{opts[:name]} is"
+elsif opts[:tag]
+  params = {:tags => opts[:tag]}
+  desc = "rules with tag #{opts[:tag]} are"
+else
+  Trollop::die "must specify a rule name or rule tag"
+end
+
+
+api = Watchmouse::API.new("1.6", opts[:email], opts[:pass], opts[:jar])
+
+begin
+  res = api.rule_get(params)
+
+  # If we aren't using a cookie jar, explicitly logout
+  if ! opts[:jar]
+    api.acct_logout
+  end
+rescue Watchmouse::Error
+  puts "UNKNOWN: WatchMouse API error: #{$!}"
+  exit 3
+end
+
+if res["rules"].length == 0
+  puts "UNKNOWN: no watchmouse matching rules found"
+  exit 3
+end
+
+errors = []
+res["rules"].each do |rule|
+  errors << rule["name"] if rule["errorsince"]
+end
+
+if errors.length > 0
+  puts "CRITICAL: Failing WatchMouse rules: #{errors.join(", ")}"
+  exit 2
+end
+
+puts "OK: WatchMouse #{desc} healthy"
+exit 0

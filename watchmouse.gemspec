@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "json"
   s.add_runtime_dependency "rest-client"
+  s.add_runtime_dependency "trollop"
 end
