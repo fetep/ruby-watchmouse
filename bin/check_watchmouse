@@ -91,7 +91,7 @@ rescue Watchmouse::Error
 end
 
 if res["rules"].length == 0
-  puts "UNKNOWN: no watchmouse matching rules found"
+  puts "UNKNOWN: no WatchMouse matching rules found"
   exit 3
 end
 
